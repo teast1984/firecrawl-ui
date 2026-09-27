@@ -149,7 +149,9 @@ export interface FirecrawlExtractionApi {
  * Legacy-compatible mapping client.
  */
 export interface FirecrawlMappingApi {
-  mapUrls(payload: Record<string, unknown>): Promise<WrappedResponse<{ links: string[] }>>;
+  mapUrls(
+    payload: Record<string, unknown>,
+  ): Promise<WrappedResponse<{ links: string[]; warning?: string }>>;
 }
 
 /**
@@ -644,6 +646,7 @@ export function createFirecrawlApiClients(apiKey: string, baseUrl: string): Fire
           const response = await http.post<{
             success: boolean;
             links?: Array<string | { url: string }>;
+            warning?: string;
           }>('/v2/map', {
             url: String(payload.url ?? ''),
             ...(typeof payload.search === 'string' && payload.search
@@ -673,6 +676,7 @@ export function createFirecrawlApiClients(apiKey: string, baseUrl: string): Fire
               links: (response.data.links ?? []).map((entry) =>
                 typeof entry === 'string' ? entry : entry.url,
               ),
+              warning: response.data.warning,
             },
           };
         } catch (error) {
